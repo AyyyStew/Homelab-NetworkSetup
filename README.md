@@ -79,10 +79,15 @@ I scored a pretty sweet deal on an HP Victus Gaming PC, which I’ve turned into
 - Managing **Linux servers** with no physical input—everything is done remotely via RDP.
 - Running **Docker containers** and **QEMU VMs** for game server hosting and learning how to handle networking and resource allocation.
 
----
-
-### Additional Skills & Learning:
+## Additional Skills & Learning:
 
 - **Network Performance Monitoring:** I’ve used Wireshark to troubleshoot and optimize network performance for smoother connections.
 - **Firewall Configurations:** I’ve learned how to configure firewalls to secure my network to keep unwanted traffic out and allow wanted traffic in.
 - **Resource Scaling & Management:** I now know how to scale virtual machines and monitor resource usage to optimize my setup based on demand.
+
+## Future Plans
+
+- Expanded Virtualization: Setup a Kubernetes cluser to pratice orchestration
+- Intrusion Detection System/Intrusion Prevnetion System: Setup and use snort to monitor and protect the network
+- Cloud Integration: Cloud storage for backups and use the cloud as a status dashboard to monitor game server health.
+- Cloud Expirments: Using my Azure credits from school to buld a cloud-based honeypot for testing attack dection with Sentinel.
