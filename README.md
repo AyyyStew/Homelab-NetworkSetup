@@ -1,116 +1,76 @@
-# **Homelab Network & Virtualization Setup**
+# Homelab
 
-This is my **homelab setup**, where I explore **virtualization, security monitoring, and server hosting** while applying automation techniques to make management easier.
+Personal infrastructure running on repurposed hardware. The homelab 
+serves as both a development platform and a production environment for 
+projects I actually use.
 
----
+<img width="1440" height="1058" alt="image" src="https://github.com/user-attachments/assets/109e0a61-2f94-4cb8-8991-9e2006023a76" />
 
-## **Current Homelab Setup**
-
-<img src="./documents/HomeNetworkDiagram.drawio.png" alt="Home network diagram" width=600px>
-
-### **Network & Hardware**
-
-- **Nokia Fiber Modem** – ISP-provided, converts fiber to Ethernet
-- **Linksys WRT3200 ACM Router** – Manages DHCP, firewall, and port forwarding
-- **Gaming PC (Main Workstation)** – Daily driver for gaming & development
-- **Proxmox Server (Former Linux Server)** – Runs virtual machines and containers
-- **Various IoT Devices** – Smart devices, printer, Roku, etc.
-
-### **Virtualization with Proxmox**
-
-I converted my **Linux server into a Proxmox hypervisor**, allowing me to:
-
-- **Host multiple VMs and containers** efficiently
-- **Run security monitoring & logging tools**
-- **Isolate workloads** (game servers, monitoring, experiments)
-
-#### **What’s Running on Proxmox?**
-
-| VM/Container       | Purpose                                                                     |
-| ------------------ | --------------------------------------------------------------------------- |
-| **Game-Servers**   | Hosting Minecraft, Terraria, Valheim, Palworld                              |
-| **SIEM**           | Runs Wazuh for security monitoring                                          |
-| **Docker**         | for testing, building, and deploying docker containers.                     |
-| **GitHub Runner**  | Integrates with github for Continuous Integration and Continuous Deployment |
-| **Ubuntu Desktop** | To explore linux and practice sysadmin skills                               |
 
 ---
 
-## **Automation & Security Enhancements**
+## Hardware
 
-### **1. Firewall Automation (Threat Aggregator Integration)**
+| Device | Role |
+|---|---|
+| Nokia fiber modem | ISP-provided, fiber → Ethernet |
+| Consumer router | DHCP, firewall, port forwarding |
+| Proxmox server | Repurposed Linux server, now a hypervisor |
+| Workstation | AMD Ryzen 7 5700X · 40GB DDR4 · Win10 — daily driver |
 
-I wrote a threat intelligence feed aggretator [here](https://github.com/AyyyStew/ThreatAggregator). This is hosted in my docker host vm.
+---
 
-This repository contains a **PowerShell script (`automateAddingToWindowsFirewall.ps1`)** that:
+## Proxmox
 
-- **Fetches malicious IPs from my Threat Aggregator API**
-- **Automatically adds firewall rules** to Windows Defender Firewall
-- Blocks **known malicious connections**
+The server runs Proxmox VE, hosting all VMs and containers on local 
+hardware. Each workload is isolated in its own VM.
 
-#### **Running the Script Manually:**
+| VM | Purpose |
+|---|---|
+| GitHub Actions runner | Self-hosted CI/CD runner for [ThreatAggregator](https://github.com/AyyyStew/ThreatAggregator) — receives push events, runs tests, builds and pushes Docker images, deploys via SSH |
+| Docker VM | Hosts the Threat Aggregator container in production |
+| Celery worker | Distributed compute node for the [Candidate Chess](https://github.com/AyyyStew/candidate-chess) position generation pipeline — runs Stockfish evaluation jobs dispatched via Redis |
+| Wazuh SIEM | Centralized security monitoring — agents on all VMs ship logs for threat detection and alerting |
+| Game servers | Minecraft, Terraria, Valheim, Palworld — port-forwarded for remote access |
+| Ubuntu desktop | Linux environment for sysadmin practice and tooling experiments |
 
-```powershell
-.\automateAddingToWindowsFirewall.ps1
+---
+
+## CI/CD integration
+
+The GitHub Actions runner VM is the operational core of this lab. On 
+every push to ThreatAggregator's main branch:
+
+```
+GitHub push event
+  → self-hosted runner picks up job
+  → pytest
+  → docker build
+  → docker push → Docker Hub
+  → SSH deploy → Docker VM restarts container
 ```
 
-_(I use Windows Task Scheduler to run this daily.)_
+The runner and the deployment target are both VMs on the same Proxmox 
+host, managed independently.
 
 ---
 
-### **2. Security Monitoring with Wazuh**
+## Security monitoring
 
-I use **Wazuh**, a security-focused **SIEM (Security Information and Event Management)** tool. Each VM gets a Wazuh agent that collects logs that allows me to:
+Wazuh agents run on all VMs and ship logs to the Wazuh SIEM VM. 
+Provides centralized visibility across the homelab — failed auth 
+attempts, file integrity, process monitoring.
 
-- **Monitor logs for suspicious activity**
-- **Detect security threats** across my network
-- **Provide centralized logging for my Proxmox server & VMs**
-
----
-
-## **Game Server Hosting**
-
-I host **Minecraft, Terraria, Valheim, and Palworld servers** on a dedicated VM.
-
-- **Manual start/stop via Proxmox** (not automated yet)
-- **Port forwarding through the router** for remote access
-- **Basic monitoring** to track uptime and resource usage
-
-_(Right now, there’s no demand for automated scaling, but I may experiment with it in the future.)_
+The Docker VM also runs the Threat Aggregator, which feeds a PowerShell 
+firewall automation script (`automateAddingToWindowsFirewall.ps1`) that 
+blocks known malicious IPs on the workstation via Windows Defender 
+Firewall rules, updated on a daily Task Scheduler job.
 
 ---
 
-## **Workstation Setup**
+## Projects running here
 
-I have a custom built PC I've been using as my daily driver for under 10 years. The PC has evolved a lot over the years but here are the current specs:
-
-**Specs:**
-
-- **CPU:** AMD Ryzen 7 5700X (8-core)
-- **RAM:** 40GB DDR4
-- **Storage:** Multiple SSDs for different workloads
-- **GPU:** MSI Duke Nvidia GTX 1080
-- **OS:** Windows 10
-
-### **Software & Tools**
-
-- **Development:** VS Code, GitHub Desktop, Docker, WSL
-- **Networking & Monitoring:** Wireshark, SSH, PowerShell
-- **Security:** Wazuh, Windows Defender, Malwarebytes (when needed), Private Internet Access VPN
-
-When setting up a new PC, I use [Ninite](https://www.ninite.com) for bulk installs:
-
----
-
-## **Future Plans & Enhancements**
-
-✅ **Expand Wazuh logging to more devices**  
-✅ **Set up a small cloud-based project with my Azure credits**  
-✅ **Experiment with Grafana dashboards for security insights**  
-✅ **Explore automating backups for game servers & configs**
-
----
-
-## **Final Thoughts**
-
-This homelab is a **work-in-progress**, helping me learn **virtualization, security monitoring, and automation** while hosting services I actually use. As I expand my knowledge, I plan to integrate **more security tools, automation, and monitoring improvements** over time.
+- [ThreatAggregator](https://github.com/AyyyStew/ThreatAggregator) — 
+  IoC feed aggregator API, containerized, continuously deployed
+- [Candidate Chess](https://github.com/AyyyStew/candidate-chess) — 
+  Celery worker participates in offline position generation pipeline
